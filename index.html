@@ -146,6 +146,35 @@ body { font-family: var(--font); background: var(--bg); min-height: 100vh; displ
 .detail-btn.toggle { background: linear-gradient(135deg, var(--accent2), #34d399); color: white; }
 .item-card { cursor: pointer; transition: transform 0.15s, box-shadow 0.15s; }
 .item-card:active { transform: scale(0.98); }
+
+/* PRODOTTI FREQUENTI */
+.freq-section { padding: 16px 16px 0; }
+.freq-scroll { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 8px; scrollbar-width: none; }
+.freq-scroll::-webkit-scrollbar { display: none; }
+.freq-chip { background: white; border: 2px solid var(--border); border-radius: 14px; padding: 10px 14px; display: flex; align-items: center; gap: 8px; cursor: pointer; flex-shrink: 0; transition: all 0.2s; white-space: nowrap; }
+.freq-chip:active { transform: scale(0.95); background: #fff5f0; border-color: var(--accent); }
+.freq-chip-emoji { font-size: 20px; }
+.freq-chip-name { font-size: 13px; font-weight: 800; color: var(--text); }
+
+/* FAMIGLIA TAB */
+#famigliaScreen { overflow-y: auto; flex: 1; }
+.fam-header { background: linear-gradient(135deg, #2d9b6f, #34d399); padding: 50px 24px 28px; position: relative; overflow: hidden; }
+.fam-header::before { content: '👨‍👩‍👧'; font-size: 100px; position: absolute; right: -10px; top: 0; opacity: 0.15; pointer-events: none; }
+.fam-title { font-size: 28px; font-weight: 900; color: white; margin-bottom: 4px; }
+.fam-sub { color: rgba(255,255,255,0.75); font-size: 14px; }
+.fam-section { padding: 20px 16px 0; }
+.fam-member-card { background: white; border-radius: 20px; padding: 16px; margin-bottom: 12px; border: 1.5px solid var(--border); box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+.fam-member-header { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+.fam-avatar { width: 48px; height: 48px; border-radius: 14px; background: var(--surface2); display: flex; align-items: center; justify-content: center; font-size: 26px; }
+.fam-member-name { font-size: 18px; font-weight: 900; color: var(--text); }
+.fam-member-count { font-size: 13px; color: var(--muted); font-weight: 600; }
+.fam-items-list { display: flex; flex-direction: column; gap: 6px; }
+.fam-item-row { display: flex; align-items: center; gap: 10px; padding: 8px 10px; background: var(--surface2); border-radius: 12px; }
+.fam-item-cat { font-size: 18px; }
+.fam-item-name { font-size: 14px; font-weight: 700; color: var(--text); flex: 1; }
+.fam-item-done { font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 8px; }
+.fam-item-done.yes { background: #f0fff4; color: var(--accent2); }
+.fam-item-done.no { background: #fff5f0; color: var(--accent); }
 </style>
 </head>
 <body>
@@ -197,6 +226,13 @@ body { font-family: var(--font); background: var(--bg); min-height: 100vh; displ
       <div class="stat-box"><div class="stat-num" id="statCarried">0</div><div class="stat-lbl">Riportati</div></div>
     </div>
     <div style="flex:1; overflow-y:auto; padding-bottom:20px">
+      <!-- PRODOTTI FREQUENTI -->
+      <div class="freq-section">
+        <div class="section-header">
+          <div class="section-title">⭐ Aggiungi veloce</div>
+        </div>
+        <div class="freq-scroll" id="freqList"></div>
+      </div>
       <div class="list-section">
         <div class="section-header">
           <div class="section-title">📋 Da comprare</div>
@@ -214,8 +250,21 @@ body { font-family: var(--font); background: var(--bg); min-height: 100vh; displ
     </div>
     <button class="fab" onclick="openModal()">+</button>
     <div class="nav-bar">
-      <div class="nav-item active"><div class="nav-icon">🛒</div><div class="nav-label">Lista</div></div>
-      <div class="nav-item"><div class="nav-icon">👨‍👩‍👧</div><div class="nav-label">Famiglia</div></div>
+      <div class="nav-item active" id="navLista" onclick="showTab('lista')"><div class="nav-icon">🛒</div><div class="nav-label">Lista</div></div>
+      <div class="nav-item" id="navFamiglia" onclick="showTab('famiglia')"><div class="nav-icon">👨‍👩‍👧</div><div class="nav-label">Famiglia</div></div>
+    </div>
+  </div>
+
+  <!-- FAMIGLIA SCREEN -->
+  <div class="screen" id="famigliaScreen">
+    <div class="fam-header">
+      <div class="fam-title">👨‍👩‍👧 La Famiglia</div>
+      <div class="fam-sub">Chi ha aggiunto cosa oggi</div>
+    </div>
+    <div id="famigliaContent" style="padding-bottom:100px"></div>
+    <div class="nav-bar">
+      <div class="nav-item" id="navLista2" onclick="showTab('lista')"><div class="nav-icon">🛒</div><div class="nav-label">Lista</div></div>
+      <div class="nav-item active" id="navFamiglia2" onclick="showTab('famiglia')"><div class="nav-icon">👨‍👩‍👧</div><div class="nav-label">Famiglia</div></div>
     </div>
   </div>
 </div>
@@ -394,7 +443,7 @@ async function doLogin() {
   document.getElementById('headerName').textContent = currentUser.name;
 
   await loadItems();
-  // Poll every 5 seconds for real-time updates
+  renderFrequent();
   pollInterval = setInterval(loadItems, 5000);
 }
 
@@ -690,6 +739,118 @@ async function toggleFromDetail() {
   btn.textContent = nowDone ? '↩️ Segna da comprare' : '✓ Segna preso';
   btn.style.background = nowDone ? 'linear-gradient(135deg,#f0a500,#e8633a)' : 'linear-gradient(135deg,var(--accent2),#34d399)';
   document.getElementById('detailOverlay').classList.remove('open');
+}
+
+// --- TAB NAVIGATION ---
+function showTab(tab) {
+  if (tab === 'lista') {
+    document.getElementById('mainScreen').classList.add('active');
+    document.getElementById('famigliaScreen').classList.remove('active');
+    document.getElementById('navLista').classList.add('active');
+    document.getElementById('navFamiglia').classList.remove('active');
+  } else {
+    document.getElementById('mainScreen').classList.remove('active');
+    document.getElementById('famigliaScreen').classList.add('active');
+    document.getElementById('navLista').classList.remove('active');
+    document.getElementById('navFamiglia').classList.add('active');
+    renderFamiglia();
+  }
+}
+
+// --- PRODOTTI FREQUENTI ---
+const FREQUENT = [
+  { name: 'Latte', cat: 'latticini', emoji: '🥛' },
+  { name: 'Pane', cat: 'pane', emoji: '🍞' },
+  { name: 'Uova', cat: 'latticini', emoji: '🥚' },
+  { name: 'Pasta', cat: 'pane', emoji: '🍝' },
+  { name: 'Pomodori', cat: 'verdura', emoji: '🍅' },
+  { name: 'Mele', cat: 'frutta', emoji: '🍎' },
+  { name: 'Acqua', cat: 'bevande', emoji: '💧' },
+  { name: 'Burro', cat: 'latticini', emoji: '🧈' },
+  { name: 'Carta igienica', cat: 'pulizia', emoji: '🧻' },
+  { name: 'Detersivo', cat: 'pulizia', emoji: '🧹' },
+  { name: 'Yogurt', cat: 'latticini', emoji: '🥛' },
+  { name: 'Banane', cat: 'frutta', emoji: '🍌' },
+];
+
+function renderFrequent() {
+  document.getElementById('freqList').innerHTML = FREQUENT.map(f => `
+    <div class="freq-chip" onclick="addFrequent('${f.name}','${f.cat}','${f.emoji}')">
+      <span class="freq-chip-emoji">${f.emoji}</span>
+      <span class="freq-chip-name">${f.name}</span>
+    </div>
+  `).join('');
+}
+
+async function addFrequent(name, catId, emoji) {
+  const cat = CATEGORIES.find(c => c.id === catId) || CATEGORIES[11];
+  const item = {
+    name, qty: '', store: '', notes: '', photo: null,
+    cat,
+    who: currentUser.name, whoEmoji: currentUser.emoji,
+    date: selectedDate, done: false, ts: Date.now()
+  };
+  try {
+    const res = await fbPush('items', item);
+    allItems[res.name] = { ...item, _key: res.name };
+    renderList();
+    showToast('✅ ' + name + ' aggiunto!');
+  } catch(e) { showToast('❌ Errore connessione'); }
+}
+
+// --- FAMIGLIA TAB ---
+function renderFamiglia() {
+  const today = todayStr();
+  const todayItems = Object.entries(allItems)
+    .filter(([k,i]) => i && i.date === today)
+    .map(([k,i]) => ({ ...i, _key: k }));
+
+  // Group by member
+  const byMember = {};
+  MEMBERS.forEach(m => { byMember[m.name] = { ...m, items: [] }; });
+
+  todayItems.forEach(item => {
+    if (!byMember[item.who]) byMember[item.who] = { name: item.who, emoji: item.whoEmoji || '👤', items: [] };
+    byMember[item.who].items.push(item);
+  });
+
+  const members = Object.values(byMember).filter(m => m.items.length > 0);
+
+  if (members.length === 0) {
+    document.getElementById('famigliaContent').innerHTML = `
+      <div class="empty-state" style="margin-top:40px">
+        <div class="empty-emoji">👨‍👩‍👧</div>
+        <div class="empty-text">Nessuno ha ancora aggiunto<br>prodotti oggi!</div>
+      </div>`;
+    return;
+  }
+
+  document.getElementById('famigliaContent').innerHTML = `
+    <div class="fam-section">
+      ${members.map(m => {
+        const done = m.items.filter(i => i.done).length;
+        return `
+          <div class="fam-member-card">
+            <div class="fam-member-header">
+              <div class="fam-avatar">${m.emoji}</div>
+              <div>
+                <div class="fam-member-name">${m.name}</div>
+                <div class="fam-member-count">${m.items.length} prodotti · ${done} presi</div>
+              </div>
+            </div>
+            <div class="fam-items-list">
+              ${m.items.map(i => {
+                const cat = i.cat || CATEGORIES[11];
+                return `<div class="fam-item-row">
+                  <span class="fam-item-cat">${cat.emoji}</span>
+                  <span class="fam-item-name">${i.name}</span>
+                  <span class="fam-item-done ${i.done ? 'yes' : 'no'}">${i.done ? '✓ Preso' : '· Da prendere'}</span>
+                </div>`;
+              }).join('')}
+            </div>
+          </div>`;
+      }).join('')}
+    </div>`;
 }
 
 init();
