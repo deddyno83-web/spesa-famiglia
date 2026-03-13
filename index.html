@@ -93,6 +93,13 @@ body { font-family: var(--font); background: var(--bg); min-height: 100vh; displ
 .field-input { width: 100%; background: white; border: 2px solid var(--border); border-radius: 14px; padding: 13px 16px; font-family: var(--font); font-size: 15px; color: var(--text); outline: none; margin-bottom: 16px; }
 .field-input:focus { border-color: var(--accent); }
 .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.cat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 16px; }
+.cat-btn { background: white; border: 2px solid var(--border); border-radius: 14px; padding: 10px 6px; text-align: center; cursor: pointer; transition: all 0.2s; }
+.cat-btn.selected { border-color: var(--accent); background: #fff5f0; transform: scale(1.05); }
+.cat-btn .cat-emoji { font-size: 24px; display: block; }
+.cat-btn .cat-name { font-size: 10px; font-weight: 800; color: var(--muted); margin-top: 4px; display: block; }
+.cat-btn.selected .cat-name { color: var(--accent); }
+.item-cat-badge { width: 48px; height: 48px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 24px; flex-shrink: 0; }
 .photo-upload { width: 100%; height: 110px; background: white; border: 2px dashed var(--border); border-radius: 16px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; margin-bottom: 16px; position: relative; }
 .photo-upload input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
 .photo-preview { width: 100%; height: 110px; border-radius: 16px; object-fit: cover; margin-bottom: 16px; display: none; }
@@ -217,6 +224,8 @@ body { font-family: var(--font); background: var(--bg); min-height: 100vh; displ
   <div class="modal">
     <div class="modal-handle"></div>
     <div class="modal-title">➕ Aggiungi prodotto</div>
+    <div class="field-label">Categoria</div>
+    <div class="cat-grid" id="catGrid"></div>
     <div class="field-label">Nome prodotto *</div>
     <input type="text" class="field-input" id="fName" placeholder="es. Latte, Pane...">
     <div class="row2">
@@ -256,6 +265,21 @@ body { font-family: var(--font); background: var(--bg); min-height: 100vh; displ
 // Firebase config
 const FB_URL = "https://spesefamiglia-360bd-default-rtdb.europe-west1.firebasedatabase.app";
 
+const CATEGORIES = [
+  { id: 'frutta',   emoji: '🍎', name: 'Frutta',    bg: '#fff0f0', color: '#e05555' },
+  { id: 'verdura',  emoji: '🥦', name: 'Verdura',   bg: '#f0fff4', color: '#2d9b6f' },
+  { id: 'carne',    emoji: '🥩', name: 'Carne',     bg: '#fff5f0', color: '#e8633a' },
+  { id: 'pesce',    emoji: '🐟', name: 'Pesce',     bg: '#f0f8ff', color: '#3a7fe8' },
+  { id: 'latticini',emoji: '🧀', name: 'Latticini', bg: '#fffbf0', color: '#d4a017' },
+  { id: 'pane',     emoji: '🍞', name: 'Pane',      bg: '#fdf5e6', color: '#c8860a' },
+  { id: 'bevande',  emoji: '🥤', name: 'Bevande',   bg: '#f5f0ff', color: '#7c5cbf' },
+  { id: 'pulizia',  emoji: '🧹', name: 'Pulizia',   bg: '#f0f9ff', color: '#0ea5e9' },
+  { id: 'igiene',   emoji: '🧴', name: 'Igiene',    bg: '#fff0fa', color: '#d946a8' },
+  { id: 'surgelati',emoji: '🧊', name: 'Surgelati', bg: '#f0feff', color: '#06b6d4' },
+  { id: 'dolci',    emoji: '🍫', name: 'Dolci',     bg: '#fff0f5', color: '#e8638a' },
+  { id: 'altro',    emoji: '🛒', name: 'Altro',     bg: '#f5f5f5', color: '#6b7280' },
+];
+
 const MEMBERS = [
   { name: 'Mamma', emoji: '👩' },
   { name: 'Papà', emoji: '👨' },
@@ -270,6 +294,7 @@ let photoData = null;
 let allItems = {};
 let selectedMember = null;
 let pollInterval = null;
+let selectedCat = CATEGORIES[11]; // default: Altro
 
 function todayStr() {
   return new Date().toISOString().split('T')[0];
@@ -459,9 +484,10 @@ function renderList() {
 
 function itemHTML(item) {
   const isDone = item.done;
+  const cat = item.cat || CATEGORIES[11];
   const photoEl = item.photo
-    ? `<div class="item-photo"><img src="${item.photo}" alt=""></div>`
-    : `<div class="item-photo">${(item.name||'?')[0].toUpperCase()}</div>`;
+    ? `<div class="item-cat-badge" style="background:${cat.bg}"><img src="${item.photo}" style="width:100%;height:100%;object-fit:cover;border-radius:14px" alt=""></div>`
+    : `<div class="item-cat-badge" style="background:${cat.bg}">${cat.emoji}</div>`;
   const carried = item.carriedFrom
     ? `<div class="carried-badge">⏩ Da ${formatDate(item.carriedDate)}</div>` : '';
   return `
@@ -507,6 +533,14 @@ function openModal() {
   document.getElementById('photoPreview').style.display = 'none';
   document.getElementById('photoUpload').style.display = 'flex';
   photoData = null;
+  selectedCat = CATEGORIES[11];
+  // Render category grid
+  document.getElementById('catGrid').innerHTML = CATEGORIES.map(c => `
+    <div class="cat-btn ${c.id === selectedCat.id ? 'selected' : ''}" onclick="selectCat('${c.id}')" style="${c.id === selectedCat.id ? 'border-color:'+c.color+';background:'+c.bg : ''}">
+      <span class="cat-emoji">${c.emoji}</span>
+      <span class="cat-name">${c.name}</span>
+    </div>
+  `).join('');
 }
 function closeModalOutside(e) {
   if (e.target === document.getElementById('modalOverlay'))
@@ -529,6 +563,22 @@ function handlePhoto(e) {
   };
   img.src = URL.createObjectURL(file);
 }
+function selectCat(id) {
+  selectedCat = CATEGORIES.find(c => c.id === id) || CATEGORIES[11];
+  document.querySelectorAll('.cat-btn').forEach(btn => {
+    const c = CATEGORIES.find(x => x.id === btn.getAttribute('onclick').match(/'(.+)'/)[1]);
+    if (c.id === id) {
+      btn.classList.add('selected');
+      btn.style.borderColor = c.color;
+      btn.style.background = c.bg;
+    } else {
+      btn.classList.remove('selected');
+      btn.style.borderColor = '';
+      btn.style.background = '';
+    }
+  });
+}
+
 async function saveItem() {
   const name = document.getElementById('fName').value.trim();
   if (!name) { showToast('⚠️ Inserisci il nome!'); return; }
@@ -538,6 +588,7 @@ async function saveItem() {
     store: document.getElementById('fStore').value.trim(),
     notes: document.getElementById('fNotes').value.trim(),
     photo: photoData || null,
+    cat: selectedCat,
     who: currentUser.name, whoEmoji: currentUser.emoji,
     date: selectedDate, done: false, ts: Date.now()
   };
