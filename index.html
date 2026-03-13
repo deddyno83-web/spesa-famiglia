@@ -44,13 +44,13 @@ body { font-family: var(--font); background: #e8dfc8; min-height: 100vh; display
 /* MAIN */
 #mainScreen { overflow-y: auto; }
 .top-header { background: linear-gradient(135deg, var(--accent) 0%, #f0a500 100%); padding: 50px 24px 28px; position: relative; overflow: hidden; }
-.top-header::before { content: '🛒'; font-size: 120px; position: absolute; right: -20px; top: -10px; opacity: 0.12; }
+.top-header::before { content: '🛒'; font-size: 120px; position: absolute; right: -20px; top: -10px; opacity: 0.12; pointer-events: none; }
 .user-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
 .user-info { display: flex; align-items: center; gap: 10px; }
 .user-avatar { width: 40px; height: 40px; border-radius: 12px; background: rgba(255,255,255,0.25); display: flex; align-items: center; justify-content: center; font-size: 22px; }
 .user-name { color: white; font-weight: 800; font-size: 16px; }
 .user-role { color: rgba(255,255,255,0.7); font-size: 12px; }
-.logout-btn { background: rgba(255,255,255,0.2); border: none; border-radius: 10px; padding: 8px 12px; color: white; font-size: 12px; font-weight: 700; cursor: pointer; font-family: var(--font); }
+.logout-btn { background: rgba(255,255,255,0.2); border: none; border-radius: 10px; padding: 8px 12px; color: white; font-size: 12px; font-weight: 700; cursor: pointer; font-family: var(--font); position: relative; z-index: 10; pointer-events: all; }
 .date-tabs { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; scrollbar-width: none; }
 .date-tabs::-webkit-scrollbar { display: none; }
 .date-tab { background: rgba(255,255,255,0.2); border: none; border-radius: 12px; padding: 8px 16px; color: white; font-size: 13px; font-weight: 700; cursor: pointer; font-family: var(--font); white-space: nowrap; flex-shrink: 0; }
@@ -60,7 +60,7 @@ body { font-family: var(--font); background: #e8dfc8; min-height: 100vh; display
 .stat-box:last-child { border-right: none; }
 .stat-num { font-size: 22px; font-weight: 900; color: var(--text); }
 .stat-lbl { font-size: 10px; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; }
-.fab { position: sticky; bottom: 80px; left: calc(100% - 74px); width: 58px; height: 58px; border-radius: 18px; background: linear-gradient(135deg, var(--accent), #f0a500); border: none; color: white; font-size: 28px; cursor: pointer; box-shadow: 0 8px 24px rgba(232,99,58,0.45); display: flex; align-items: center; justify-content: center; z-index: 50; margin: -58px 16px 16px auto; }
+.fab { position: fixed; bottom: 90px; right: calc(50% - 175px); width: 58px; height: 58px; border-radius: 18px; background: linear-gradient(135deg, var(--accent), #f0a500); border: none; color: white; font-size: 28px; cursor: pointer; box-shadow: 0 8px 24px rgba(232,99,58,0.45); display: flex; align-items: center; justify-content: center; z-index: 55; pointer-events: all; }
 .list-section { padding: 16px 16px 0; }
 .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
 .section-title { font-size: 17px; font-weight: 900; color: var(--text); }
@@ -97,8 +97,8 @@ body { font-family: var(--font); background: #e8dfc8; min-height: 100vh; display
 .photo-upload input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
 .photo-preview { width: 100%; height: 110px; border-radius: 16px; object-fit: cover; margin-bottom: 16px; display: none; }
 .save-btn { width: 100%; background: linear-gradient(135deg, var(--accent), #f0a500); border: none; border-radius: 16px; padding: 17px; color: white; font-size: 17px; font-weight: 900; cursor: pointer; font-family: var(--font); margin-top: 8px; }
-.nav-bar { background: rgba(253,248,240,0.95); backdrop-filter: blur(20px); border-top: 1px solid var(--border); padding: 12px 28px 28px; display: flex; justify-content: space-around; }
-.nav-item { display: flex; flex-direction: column; align-items: center; gap: 3px; opacity: 0.35; }
+.nav-bar { background: rgba(253,248,240,0.95); backdrop-filter: blur(20px); border-top: 1px solid var(--border); padding: 12px 28px 28px; display: flex; justify-content: space-around; position: relative; z-index: 60; }
+.nav-item { display: flex; flex-direction: column; align-items: center; gap: 3px; opacity: 0.35; cursor: pointer; }
 .nav-item.active { opacity: 1; }
 .nav-icon { font-size: 22px; }
 .nav-label { font-size: 10px; font-weight: 800; color: var(--accent); }
