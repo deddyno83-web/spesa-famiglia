@@ -34,7 +34,7 @@ body { font-family: var(--font); background: var(--bg); min-height: 100vh; displ
 .login-card { background: white; border-radius: 28px; padding: 28px 24px; width: 100%; box-shadow: 0 20px 60px rgba(0,0,0,0.15); }
 .field-label { font-size: 12px; font-weight: 800; color: var(--muted); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 8px; }
 .login-input { width: 100%; background: var(--surface2); border: 2px solid var(--border); border-radius: 14px; padding: 14px 16px; font-family: var(--font); font-size: 16px; color: var(--text); outline: none; margin-bottom: 16px; }
-.members-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+.members-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 20px; }
 .member-card { background: var(--surface2); border: 2px solid var(--border); border-radius: 16px; padding: 14px 10px; text-align: center; cursor: pointer; transition: all 0.2s; }
 .member-card.selected { background: #fff5f0; border-color: var(--accent); }
 .member-emoji { font-size: 32px; }
@@ -259,8 +259,9 @@ const FB_URL = "https://spesefamiglia-360bd-default-rtdb.europe-west1.firebaseda
 const MEMBERS = [
   { name: 'Mamma', emoji: '👩' },
   { name: 'Papà', emoji: '👨' },
-  { name: 'Figlio', emoji: '👦' },
+  { name: 'Eddy', emoji: '👦' },
   { name: 'Figlia', emoji: '👧' },
+  { name: 'Stefano', emoji: '👱‍♂️' },
 ];
 
 let currentUser = null;
