@@ -175,6 +175,39 @@ body { font-family: var(--font); background: var(--bg); min-height: 100vh; displ
 .fam-item-done { font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 8px; }
 .fam-item-done.yes { background: #f0fff4; color: var(--accent2); }
 .fam-item-done.no { background: #fff5f0; color: var(--accent); }
+
+/* DIETA TAB */
+#dietaScreen { overflow-y: auto; flex: 1; display: none; flex-direction: column; }
+#dietaScreen.active { display: flex; }
+.dieta-header { background: linear-gradient(135deg, #7c5cbf, #a78bfa); padding: 50px 24px 28px; position: relative; overflow: hidden; }
+.dieta-header::before { content: '🥗'; font-size: 100px; position: absolute; right: -10px; top: 0; opacity: 0.15; pointer-events: none; }
+.dieta-title { font-size: 28px; font-weight: 900; color: white; margin-bottom: 4px; }
+.dieta-sub { color: rgba(255,255,255,0.75); font-size: 14px; }
+.dieta-person-tabs { display: flex; gap: 8px; overflow-x: auto; margin: 16px 16px 0; scrollbar-width: none; }
+.dieta-person-tabs::-webkit-scrollbar { display: none; }
+.dieta-person-tab { background: var(--surface2); border: 2px solid var(--border); border-radius: 12px; padding: 8px 16px; font-size: 13px; font-weight: 800; color: var(--muted); cursor: pointer; white-space: nowrap; flex-shrink: 0; transition: all 0.2s; }
+.dieta-person-tab.active { background: #f5f0ff; border-color: #7c5cbf; color: #7c5cbf; }
+.week-grid { padding: 16px; display: flex; flex-direction: column; gap: 12px; padding-bottom: 100px; }
+.day-card { background: white; border-radius: 20px; border: 1.5px solid var(--border); overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+.day-card-header { padding: 14px 16px; display: flex; justify-content: space-between; align-items: center; background: var(--surface2); }
+.day-name { font-size: 16px; font-weight: 900; color: var(--text); }
+.day-today-badge { background: #7c5cbf; color: white; border-radius: 8px; padding: 3px 10px; font-size: 11px; font-weight: 800; }
+.meal-row { padding: 12px 16px; border-top: 1px solid var(--border); display: flex; align-items: flex-start; gap: 12px; }
+.meal-icon { font-size: 22px; flex-shrink: 0; width: 36px; text-align: center; }
+.meal-info { flex: 1; }
+.meal-label { font-size: 11px; font-weight: 800; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; }
+.meal-text { font-size: 14px; font-weight: 700; color: var(--text); margin-top: 2px; }
+.meal-text.empty { color: var(--muted); font-style: italic; font-weight: 500; }
+.meal-edit-btn { background: var(--surface2); border: none; border-radius: 8px; width: 30px; height: 30px; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+
+/* DIETA EDIT MODAL */
+.dieta-modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 150; align-items: flex-end; justify-content: center; }
+.dieta-modal-overlay.open { display: flex; }
+.dieta-modal { background: var(--bg); border-radius: 32px 32px 0 0; width: 100%; max-width: 600px; padding: 12px 24px 48px; animation: slideUp 0.35s cubic-bezier(0.32,0.72,0,1); }
+.dieta-modal-title { font-size: 20px; font-weight: 900; color: var(--text); }
+.dieta-textarea { width: 100%; background: white; border: 2px solid var(--border); border-radius: 14px; padding: 14px 16px; font-family: var(--font); font-size: 15px; color: var(--text); outline: none; resize: none; height: 120px; margin-top: 16px; margin-bottom: 16px; }
+.dieta-textarea:focus { border-color: #7c5cbf; }
+.dieta-save-btn { width: 100%; background: linear-gradient(135deg, #7c5cbf, #a78bfa); border: none; border-radius: 16px; padding: 16px; color: white; font-size: 16px; font-weight: 900; cursor: pointer; font-family: var(--font); }
 </style>
 </head>
 <body>
@@ -252,6 +285,7 @@ body { font-family: var(--font); background: var(--bg); min-height: 100vh; displ
     <div class="nav-bar">
       <div class="nav-item active" id="navLista" onclick="showTab('lista')"><div class="nav-icon">🛒</div><div class="nav-label">Lista</div></div>
       <div class="nav-item" id="navFamiglia" onclick="showTab('famiglia')"><div class="nav-icon">👨‍👩‍👧</div><div class="nav-label">Famiglia</div></div>
+      <div class="nav-item" onclick="showTab('dieta')"><div class="nav-icon">🥗</div><div class="nav-label">Dieta</div></div>
     </div>
   </div>
 
@@ -263,8 +297,24 @@ body { font-family: var(--font); background: var(--bg); min-height: 100vh; displ
     </div>
     <div id="famigliaContent" style="padding-bottom:100px"></div>
     <div class="nav-bar">
-      <div class="nav-item" id="navLista2" onclick="showTab('lista')"><div class="nav-icon">🛒</div><div class="nav-label">Lista</div></div>
-      <div class="nav-item active" id="navFamiglia2" onclick="showTab('famiglia')"><div class="nav-icon">👨‍👩‍👧</div><div class="nav-label">Famiglia</div></div>
+      <div class="nav-item" onclick="showTab('lista')"><div class="nav-icon">🛒</div><div class="nav-label">Lista</div></div>
+      <div class="nav-item active" onclick="showTab('famiglia')"><div class="nav-icon">👨‍👩‍👧</div><div class="nav-label">Famiglia</div></div>
+      <div class="nav-item" onclick="showTab('dieta')"><div class="nav-icon">🥗</div><div class="nav-label">Dieta</div></div>
+    </div>
+  </div>
+
+  <!-- DIETA SCREEN -->
+  <div class="screen" id="dietaScreen">
+    <div class="dieta-header">
+      <div class="dieta-title">🥗 Piano Dieta</div>
+      <div class="dieta-sub">Piano settimanale per persona</div>
+    </div>
+    <div class="dieta-person-tabs" id="dietaPersonTabs"></div>
+    <div class="week-grid" id="weekGrid"></div>
+    <div class="nav-bar">
+      <div class="nav-item" onclick="showTab('lista')"><div class="nav-icon">🛒</div><div class="nav-label">Lista</div></div>
+      <div class="nav-item" onclick="showTab('famiglia')"><div class="nav-icon">👨‍👩‍👧</div><div class="nav-label">Famiglia</div></div>
+      <div class="nav-item active" onclick="showTab('dieta')"><div class="nav-icon">🥗</div><div class="nav-label">Dieta</div></div>
     </div>
   </div>
 </div>
@@ -301,6 +351,23 @@ body { font-family: var(--font); background: var(--bg); min-height: 100vh; displ
 </div>
 
 <div class="toast" id="toast"></div>
+
+<!-- DIETA EDIT MODAL -->
+<div class="dieta-modal-overlay" id="dietaModalOverlay" onclick="closeDietaModalOutside(event)">
+  <div class="dieta-modal">
+    <div class="modal-handle"></div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+      <div class="dieta-modal-title" id="dietaModalTitle">Modifica pasto</div>
+      <button onclick="closeDietaModal()" style="background:var(--surface2);border:none;border-radius:50%;width:34px;height:34px;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center">✕</button>
+    </div>
+    <div style="font-size:13px;color:var(--muted);font-weight:600" id="dietaModalSub"></div>
+    <textarea class="dieta-textarea" id="dietaTextarea" placeholder="es. Pasta al pomodoro, insalata mista..."></textarea>
+    <div style="display:flex;gap:10px">
+      <button onclick="closeDietaModal()" style="flex:1;background:var(--surface2);border:none;border-radius:16px;padding:16px;font-family:var(--font);font-size:15px;font-weight:800;color:var(--muted);cursor:pointer">Annulla</button>
+      <button class="dieta-save-btn" style="flex:2" onclick="saveMeal()">Salva 💾</button>
+    </div>
+  </div>
+</div>
 
 <!-- DETAIL MODAL -->
 <div class="detail-overlay" id="detailOverlay" onclick="closeDetailOutside(event)">
@@ -339,7 +406,7 @@ const MEMBERS = [
   { name: 'Mamma', emoji: '👩' },
   { name: 'Papà', emoji: '👨' },
   { name: 'Eddy', emoji: '👦' },
-  { name: 'Figlia', emoji: '👧' },
+  { name: 'Giorgia', emoji: '👧' },
   { name: 'Stefano', emoji: '👱‍♂️' },
 ];
 
@@ -443,6 +510,7 @@ async function doLogin() {
   document.getElementById('headerName').textContent = currentUser.name;
 
   await loadItems();
+  await loadDieta();
   renderFrequent();
   pollInterval = setInterval(loadItems, 5000);
 }
@@ -743,17 +811,20 @@ async function toggleFromDetail() {
 
 // --- TAB NAVIGATION ---
 function showTab(tab) {
+  document.getElementById('mainScreen').classList.remove('active');
+  document.getElementById('famigliaScreen').classList.remove('active');
+  document.getElementById('dietaScreen').classList.remove('active');
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+
   if (tab === 'lista') {
     document.getElementById('mainScreen').classList.add('active');
-    document.getElementById('famigliaScreen').classList.remove('active');
-    document.getElementById('navLista').classList.add('active');
-    document.getElementById('navFamiglia').classList.remove('active');
-  } else {
-    document.getElementById('mainScreen').classList.remove('active');
+    document.querySelectorAll('.nav-item')[0].classList.add('active');
+  } else if (tab === 'famiglia') {
     document.getElementById('famigliaScreen').classList.add('active');
-    document.getElementById('navLista').classList.remove('active');
-    document.getElementById('navFamiglia').classList.add('active');
     renderFamiglia();
+  } else if (tab === 'dieta') {
+    document.getElementById('dietaScreen').classList.add('active');
+    renderDieta();
   }
 }
 
@@ -851,6 +922,194 @@ function renderFamiglia() {
           </div>`;
       }).join('')}
     </div>`;
+}
+
+// --- DIETA ---
+const GIORNI = ['Lunedì','Martedì','Mercoledì','Giovedì','Venerdì','Sabato','Domenica'];
+const PASTI = [
+  { id: 'pranzo', label: 'Pranzo', emoji: '🍽️' },
+  { id: 'cena',   label: 'Cena',   emoji: '🌙' },
+];
+
+let dietaPersone = [...MEMBERS.map(m => m.name)];
+let selectedDietaPerson = dietaPersone[0];
+let dietaData = {}; // { personName: { 'lun_pranzo': 'testo', ... } }
+let editingMeal = null; // { person, dayIdx, mealId }
+
+async function loadDieta() {
+  try {
+    const data = await fbGet('dieta');
+    dietaData = data || {};
+  } catch(e) { dietaData = {}; }
+}
+
+function todayDayIdx() {
+  const d = new Date().getDay();
+  return d === 0 ? 6 : d - 1; // Monday = 0
+}
+
+function renderDieta() {
+  // Person tabs
+  document.getElementById('dietaPersonTabs').innerHTML = dietaPersone.map(p => `
+    <div class="dieta-person-tab ${p === selectedDietaPerson ? 'active' : ''}" onclick="selectDietaPerson('${p}')">
+      ${MEMBERS.find(m => m.name === p)?.emoji || '👤'} ${p}
+    </div>
+  `).join('');
+
+  renderWeekGrid();
+}
+
+function selectDietaPerson(name) {
+  selectedDietaPerson = name;
+  renderDieta();
+}
+
+function renderWeekGrid() {
+  const todayIdx = todayDayIdx();
+  const personData = dietaData[selectedDietaPerson] || {};
+
+  document.getElementById('weekGrid').innerHTML = GIORNI.map((giorno, idx) => {
+    const isToday = idx === todayIdx;
+    const meals = PASTI.map(pasto => {
+      const key = idx + '_' + pasto.id;
+      const testo = personData[key] || '';
+      const alerts = selectedDietaPerson === 'Papà' ? checkPietroAlerts(testo) : [];
+      const alertBadges = alerts.map(a =>
+        `<div style="display:inline-flex;align-items:center;gap:4px;background:${a.bg};border:1px solid ${a.color};border-radius:8px;padding:2px 8px;font-size:11px;font-weight:800;color:${a.color};margin-top:4px;margin-right:4px">⚠️ ${a.label}</div>`
+      ).join('');
+      return `
+        <div class="meal-row">
+          <div class="meal-icon">${pasto.emoji}</div>
+          <div class="meal-info">
+            <div class="meal-label">${pasto.label}</div>
+            <div class="meal-text ${testo ? '' : 'empty'}">${testo || 'Non impostato'}</div>
+            ${alertBadges}
+          </div>
+          <button class="meal-edit-btn" onclick="openDietaModal('${selectedDietaPerson}',${idx},'${pasto.id}','${pasto.label}')">✏️</button>
+        </div>`;
+    }).join('');
+
+    return `
+      <div class="day-card">
+        <div class="day-card-header">
+          <div class="day-name">${giorno}</div>
+          ${isToday ? '<div class="day-today-badge">Oggi</div>' : ''}
+        </div>
+        ${meals}
+      </div>`;
+  }).join('');
+}
+
+function openDietaModal(person, dayIdx, mealId, mealLabel) {
+  editingMeal = { person, dayIdx, mealId };
+  const key = dayIdx + '_' + mealId;
+  const val = (dietaData[person] || {})[key] || '';
+  document.getElementById('dietaModalTitle').textContent = `${mealLabel} — ${GIORNI[dayIdx]}`;
+  document.getElementById('dietaModalSub').textContent = `Piano di ${person}`;
+  document.getElementById('dietaTextarea').value = val;
+  document.getElementById('dietaModalOverlay').classList.add('open');
+  setTimeout(() => {
+    document.getElementById('dietaTextarea').focus();
+    document.getElementById('dietaTextarea').oninput = () => {
+      showPietroAlertIfNeeded(document.getElementById('dietaTextarea').value);
+    };
+    showPietroAlertIfNeeded(val);
+  }, 400);
+}
+
+function closeDietaModal() {
+  document.getElementById('dietaModalOverlay').classList.remove('open');
+  editingMeal = null;
+}
+function closeDietaModalOutside(e) {
+  if (e.target === document.getElementById('dietaModalOverlay')) closeDietaModal();
+}
+
+async function saveMeal() {
+  if (!editingMeal) return;
+  const { person, dayIdx, mealId } = editingMeal;
+  const key = dayIdx + '_' + mealId;
+  const val = document.getElementById('dietaTextarea').value.trim();
+
+  if (!dietaData[person]) dietaData[person] = {};
+  dietaData[person][key] = val;
+
+  try {
+    await fbPatch(`dieta/${person}`, { [key]: val });
+    closeDietaModal();
+    renderWeekGrid();
+    showToast('✅ Salvato!');
+  } catch(e) { showToast('❌ Errore connessione'); }
+}
+
+// --- ALERT SALUTE PIETRO (Papà) ---
+const PIETRO_ALERTS = {
+  lattosio: {
+    label: '🥛 Lattosio',
+    color: '#3a7fe8',
+    bg: '#f0f8ff',
+    alimenti: [
+      'latte','mozzarella','burro','panna','yogurt','formaggio','formaggi',
+      'ricotta','mascarpone','gorgonzola','parmigiano','pecorino','brie',
+      'camembert','fontina','emmental','besciamella','gelato','budino',
+      'cioccolato al latte','cappuccino','caffe latte','latte intero',
+      'latte parzialmente scremato','latticini','pizza','lasagne'
+    ]
+  },
+  diverticoli: {
+    label: '⚠️ Diverticoli',
+    color: '#e8633a',
+    bg: '#fff5f0',
+    alimenti: [
+      'pomodoro','pomodori','fragole','fragola','kiwi','fichi','fico',
+      'lamponi','more','mirtilli','semi','peperoncino','peperoni',
+      'alcol','vino','birra','grappa','piccante','fritto','fritti',
+      'salsiccia','salumi','insaccati','maionese','patatine',
+      'carne grassa','cotechino','zampone','fagioli','lenticchie',
+      'ceci','piselli','cavolo','cavolfiore','broccoli','cipolla'
+    ]
+  }
+};
+
+function checkPietroAlerts(testo) {
+  if (!testo) return [];
+  const lower = testo.toLowerCase();
+  const alerts = [];
+
+  for (const [type, data] of Object.entries(PIETRO_ALERTS)) {
+    const found = data.alimenti.filter(a => lower.includes(a));
+    if (found.length > 0) {
+      alerts.push({ ...data, type, found });
+    }
+  }
+  return alerts;
+}
+
+function showPietroAlertIfNeeded(testo) {
+  const existing = document.getElementById('pietroAlertBox');
+  if (existing) existing.remove();
+
+  if (selectedDietaPerson !== 'Papà') return;
+  const alerts = checkPietroAlerts(testo);
+  if (alerts.length === 0) return;
+
+  const box = document.createElement('div');
+  box.id = 'pietroAlertBox';
+  box.style.cssText = `margin-top:12px; display:flex; flex-direction:column; gap:8px;`;
+
+  alerts.forEach(a => {
+    const div = document.createElement('div');
+    div.style.cssText = `background:${a.bg}; border:2px solid ${a.color}; border-radius:14px; padding:12px 14px; display:flex; gap:10px; align-items:flex-start;`;
+    div.innerHTML = `
+      <div style="font-size:22px;flex-shrink:0">⚠️</div>
+      <div>
+        <div style="font-size:13px;font-weight:900;color:${a.color}">${a.label} — Attenzione per Papà!</div>
+        <div style="font-size:12px;color:#555;margin-top:3px;font-weight:600">Rilevato: <strong>${a.found.join(', ')}</strong></div>
+      </div>`;
+    box.appendChild(div);
+  });
+
+  document.getElementById('dietaTextarea').after(box);
 }
 
 init();
